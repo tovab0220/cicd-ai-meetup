@@ -1,0 +1,85 @@
+name: CI
+
+
+# טריגרים: push ל-main, כל pull request, והרצה ידנית
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+
+# הרשאות מינימליות לכל ה-workflow: קריאה בלבד
+permissions:
+  contents: read
+
+
+jobs:
+  # Job ראשון: lint
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      # הורדת הקוד
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+
+      # התקנת Node עם cache של npm
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+
+      # התקנה נקייה לפי package-lock.json
+      - run: npm ci
+
+
+      # הרצת ESLint
+      - run: npm run lint
+
+
+  # Job שני: בדיקות, רץ רק אחרי ש-lint עבר
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+
+
+    # מטריצה: Node 22 ו-24
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+
+
+    steps:
+      # הורדת הקוד
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+
+      # התקנת גרסת Node מהמטריצה, עם cache של npm
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+
+      # התקנה נקייה של התלויות
+      - run: npm ci
+
+
+      # הרצת הבדיקות (כותב דוח JUnit אל reports/)
+      - run: npm run test:ci
+
+
+      # העלאת reports/ גם אם הבדיקות נכשלו; שם ייחודי לכל גרסת Node
+      - name: Upload reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports-node-${{ matrix.node-version }}
+          path: reports/
+          if-no-files-found: warn
