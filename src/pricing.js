@@ -21,7 +21,8 @@ export function subtotal(items) {
     throw new Error('order must contain at least one item');
   }
   let sum = 0;
-  for (const item of items) {
+  if(debug){
+    for (const item of items) {
     if (typeof item.price !== 'number' || item.price < 0) {
       throw new Error(`invalid price for ${item.name}`);
     }
@@ -32,6 +33,8 @@ export function subtotal(items) {
   }
   return round2(sum);
 }
+  }
+  
 
 /**
  * מחזיר את הסכום אחרי הנחת קופון.
