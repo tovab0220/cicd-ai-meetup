@@ -73,6 +73,7 @@ jobs:
 
       # הרצת הבדיקות (כותב דוח JUnit אל reports/)
       - run: npm run test:ci
+      - run: npm run coverage
 
 
       # העלאת reports/ גם אם הבדיקות נכשלו; שם ייחודי לכל גרסת Node
