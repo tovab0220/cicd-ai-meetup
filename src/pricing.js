@@ -16,6 +16,7 @@ const round2 = (n) => Math.round(n * 100) / 100;
  * @param {{name: string, price: number, qty: number}[]} items
  */
 export function subtotal(items) {
+  const debug = true;
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error('order must contain at least one item');
   }
